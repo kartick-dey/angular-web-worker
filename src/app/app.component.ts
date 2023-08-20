@@ -5,7 +5,7 @@ import { AfterViewInit, Component, OnInit } from '@angular/core';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent implements OnInit, AfterViewInit {
   title = 'angular-web-worker';
 
   public loader: boolean = false;
@@ -15,6 +15,17 @@ export class AppComponent implements AfterViewInit {
     translate: 0,
     rightDirection: true,
   };
+
+  public worker;
+
+  constructor() {
+    this.worker = new Worker(new URL('./app-worker.worker', import.meta.url));
+  }
+  ngOnInit(): void {
+    this.worker.onmessage = ({ data }) => {
+      this.result = data;
+    };
+  }
 
   ngAfterViewInit(): void {
     // implementated animations
@@ -33,10 +44,13 @@ export class AppComponent implements AfterViewInit {
     } else if (this.animation.translate < 0) {
       this.animation.rightDirection = true;
     }
-    console.log('this.animation.translate:', this.animation);
 
     this.sliderTranslate = `translateX(${this.animation.translate}px)`;
-    console.log('this.sliderTranslate:', this.sliderTranslate);
     requestAnimationFrame(this.animateFrame.bind(this));
+  }
+
+  public enable() {
+    // this.result = longOps(2500);
+    this.worker.postMessage(2500)
   }
 }
